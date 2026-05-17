@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1a1a2e">
+<title>Keuangan UMKM</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0f0f1a;
+    --bg2:       #16162a;
+    --card:      #1e1e35;
+    --card2:     #252540;
+    --accent:    #6c63ff;
+    --accent2:   #a78bfa;
+    --green:     #10b981;
+    --red:       #ef4444;
+    --yellow:    #f59e0b;
+    --text:      #e2e8f0;
+    --muted:     #94a3b8;
+    --border:    rgba(255,255,255,0.08);
+    --radius:    16px;
+    --font:      'Plus Jakarta Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100dvh; }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header h1 { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+  .header h1 span { color: var(--accent2); }
+  .header p { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* ── NAV TABS ── */
+  .tabs {
+    display: flex; background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 61px; z-index: 99;
+  }
+  .tab {
+    flex: 1; padding: 12px 6px; text-align: center;
+    font-size: 11px; font-weight: 600; color: var(--muted);
+    border: none; background: none; cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+  .tab-icon { font-size: 16px; display: block; margin-bottom: 2px; }
+
+  /* ── PAGES ── */
+  .page { display: none; padding: 16px; }
+  .page.active { display: block; }
+
+  /* ── RINGKASAN CARDS ── */
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .summary-card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 14px; border: 1px solid var(--border);
+  }
+  .summary-card.full { grid-column: span 2; }
+  .summary-card .label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .summary-card .amount { font-size: 18px; font-weight: 800; margin-top: 4px; }
+  .summary-card .icon { font-size: 22px; margin-bottom: 6px; }
+  .green-card { border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.08); }
+  .green-card .amount { color: var(--green); }
+  .red-card   { border-color: rgba(239,68,68,0.3);  background: rgba(239,68,68,0.08); }
+  .red-card   .amount { color: var(--red); }
+  .blue-card  { border-color: rgba(108,99,255,0.3); background: rgba(108,99,255,0.08); }
+  .blue-card  .amount { color: var(--accent2); }
+
+  /* ── DATE FILTER ── */
+  .filter-bar {
+    background: var(--card); border-radius: var(--radius);
+    padding: 12px; border: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .filter-bar .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .filter-bar label { font-size: 11px; color: var(--muted); font-weight: 600; }
+  .filter-bar input[type=date] {
+    flex: 1; min-width: 120px;
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); border-radius: 10px; padding: 8px 10px;
+    font-size: 13px; font-family: var(--font);
+  }
+  .filter-bar input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 700;
+    border: none; cursor: pointer; transition: all 0.15s; font-family: var(--font);
+  }
+  .btn-primary  { background: var(--accent);  color: #fff; }
+  .btn-green    { background: var(--green);   color: #fff; }
+  .btn-red      { background: var(--red);     color: #fff; }
+  .btn-yellow   { background: var(--yellow);  color: #000; }
+  .btn-ghost    { background: var(--card2); color: var(--text); border: 1px solid var(--border); }
+  .btn:active   { transform: scale(0.96); opacity: 0.85; }
+  .btn-full     { width: 100%; }
+  .btn-sm       { padding: 7px 12px; font-size: 12px; }
+
+  /* ── FORM ── */
+  .form-card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 16px; border: 1px solid var(--border); margin-bottom: 16px;
+  }
+  .form-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: var(--accent2); }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; }
+  .field input, .field select, .field textarea {
+    width: 100%; background: var(--bg2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 12px; padding: 11px 14px;
+    font-size: 14px; font-family: var(--font); outline: none;
+    transition: border-color 0.2s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field select option { background: var(--bg2); }
+  .field input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1); }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* ── JENIS TOGGLE ── */
+  .jenis-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .jenis-btn {
+    padding: 10px; border-radius: 12px; border: 2px solid var(--border);
+    background: var(--bg2); color: var(--muted); font-weight: 700; font-size: 13px;
+    cursor: pointer; text-align: center; transition: all 0.2s;
+  }
+  .jenis-btn.active-pendapatan { border-color: var(--green); background: rgba(16,185,129,0.12); color: var(--green); }
+  .jenis-btn.active-pengeluaran { border-color: var(--red); background: rgba(239,68,68,0.12); color: var(--red); }
+
+  /* ── TRANSAKSI LIST ── */
+  .trx-list { display: flex; flex-direction: column; gap: 8px; }
+  .trx-item {
+    background: var(--card); border-radius: 14px; padding: 13px 14px;
+    border: 1px solid var(--border); display: flex; align-items: center; gap: 12px;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .trx-item:active { background: var(--card2); }
+  .trx-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .trx-dot.P { background: var(--green); }
+  .trx-dot.E { background: var(--red); }
+  .trx-info { flex: 1; min-width: 0; }
+  .trx-info .desc { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .trx-info .meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .trx-amount { font-size: 13px; font-weight: 800; white-space: nowrap; }
+  .trx-amount.P { color: var(--green); }
+  .trx-amount.E { color: var(--red); }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 10px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 200;
+    backdrop-filter: blur(4px);
+    align-items: flex-end; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2); border-radius: 24px 24px 0 0;
+    padding: 20px; width: 100%; max-width: 500px;
+    border-top: 1px solid var(--border);
+    max-height: 90dvh; overflow-y: auto;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 4px; margin: 0 auto 16px; }
+  .modal h3 { font-size: 16px; font-weight: 800; margin-bottom: 16px; }
+  .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: #1e293b; color: #fff; padding: 10px 20px; border-radius: 50px;
+    font-size: 13px; font-weight: 600; z-index: 300;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    opacity: 0; transition: opacity 0.3s;
+    border: 1px solid var(--border); white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+  .toast.success { border-color: var(--green); color: var(--green); }
+  .toast.error   { border-color: var(--red);   color: var(--red); }
+
+  /* ── FAB ── */
+  .fab {
+    position: fixed; bottom: 74px; right: 20px; z-index: 150;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--accent); color: white; border: none;
+    font-size: 26px; cursor: pointer; box-shadow: 0 8px 24px rgba(108,99,255,0.5);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.15s;
+  }
+  .fab:active { transform: scale(0.9); }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
+    background: var(--bg2); border-top: 1px solid var(--border);
+    display: flex; z-index: 100;
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600; color: var(--muted);
+    border: none; background: none; cursor: pointer; gap: 3px;
+  }
+  .nav-item .ni { font-size: 20px; }
+  .nav-item.active { color: var(--accent2); }
+
+  /* bottom padding for fixed nav */
+  .page { padding-bottom: 76px; }
+
+  /* ── CHART BAR ── */
+  .progress-bar { background: var(--bg); border-radius: 8px; height: 8px; overflow: hidden; margin-top: 6px; }
+  .progress-fill { height: 100%; border-radius: 8px; transition: width 0.6s ease; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <h1>💰 Keuangan <span>UMKM</span></h1>
+  <p id="headerDate">Memuat...</p>
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
+    <span class="ni">🏠</span> Beranda
+  </button>
+  <button class="nav-item" onclick="showPage('transaksi')" id="nav-transaksi">
+    <span class="ni">📋</span> Transaksi
+  </button>
+  <button class="nav-item" onclick="showPage('laporan')" id="nav-laporan">
+    <span class="ni">📊</span> Laporan
+  </button>
+</nav>
+
+<!-- FAB TAMBAH -->
+<button class="fab" onclick="openModal('modal-tambah')" title="Tambah Transaksi">＋</button>
+
+<!-- ════════════════════════════════════════════
+     PAGE: DASHBOARD
+════════════════════════════════════════════ -->
+<div class="page active" id="page-dashboard">
+  <div class="filter-bar">
+    <div class="row">
+      <label>Dari</label>
+      <input type="date" id="dash-start">
+      <label>s/d</label>
+      <input type="date" id="dash-end">
+    </div>
+    <div style="margin-top:8px; display:flex; gap:8px;">
+      <button class="btn btn-primary btn-sm" onclick="loadDashboard()">🔄 Refresh</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportExcel()">📥 Excel</button>
+    </div>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card green-card">
+      <div class="icon">💵</div>
+      <div class="label">Pendapatan</div>
+      <div class="amount" id="dash-pendapatan">—</div>
+    </div>
+    <div class="summary-card red-card">
+      <div class="icon">💸</div>
+      <div class="label">Pengeluaran</div>
+      <div class="amount" id="dash-pengeluaran">—</div>
+    </div>
+    <div class="summary-card full blue-card">
+      <div class="icon">📈</div>
+      <div class="label">Keuntungan Bersih</div>
+      <div class="amount" id="dash-keuntungan">—</div>
+      <div class="progress-bar" style="margin-top:10px;">
+        <div class="progress-fill" id="dash-bar" style="background:var(--green); width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--card); border-radius:var(--radius); padding:14px; border:1px solid var(--border);">
+    <h3 style="font-size:13px; font-weight:700; color:var(--muted); margin-bottom:10px;">🕐 TRANSAKSI TERBARU</h3>
+    <div class="trx-list" id="dash-recent"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PAGE: TRANSAKSI
+════════════════════════════════════════════ -->
+<div class="page" id="page-transaksi">
+  <div class="filter-bar">
+    <div class="row">
+      <label>Dari</label>
+      <input type="date" id="trx-start">
+      <label>s/d</label>
+      <input type="date" id="trx-end">
+      <button class="btn btn-primary btn-sm" onclick="loadTransaksi()">🔍</button>
+    </div>
+  </div>
+  <div class="trx-list" id="trx-list"></div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PAGE: LAPORAN
+════════════════════════════════════════════ -->
+<div class="page" id="page-laporan">
+  <div class="filter-bar">
+    <div class="row">
+      <label>Dari</label>
+      <input type="date" id="lap-start">
+      <label>s/d</label>
+      <input type="date" id="lap-end">
+    </div>
+    <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" onclick="loadLaporan()">📊 Lihat</button>
+      <button class="btn btn-ghost btn-sm" onclick="setRange('bulan')">Bulan Ini</button>
+      <button class="btn btn-ghost btn-sm" onclick="setRange('minggu')">Minggu Ini</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportExcel()">📥 Excel</button>
+    </div>
+  </div>
+
+  <div id="laporan-content">
+    <div class="empty-state"><div class="icon">📊</div><p>Pilih periode dan tekan Lihat</p></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     MODAL: TAMBAH / EDIT
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-tambah">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="modal-title">➕ Tambah Transaksi</h3>
+
+    <div class="field">
+      <label>Jenis</label>
+      <div class="jenis-toggle">
+        <div class="jenis-btn active-pendapatan" id="btn-pendapatan" onclick="setJenis('PENDAPATAN')">💵 Pendapatan</div>
+        <div class="jenis-btn" id="btn-pengeluaran" onclick="setJenis('PENGELUARAN')">💸 Pengeluaran</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label>Tanggal</label>
+        <input type="date" id="f-tanggal">
+      </div>
+      <div class="field">
+        <label>Kategori</label>
+        <select id="f-kategori"></select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Deskripsi</label>
+      <input type="text" id="f-deskripsi" placeholder="Keterangan transaksi...">
+    </div>
+    <div class="field">
+      <label>Nominal (Rp)</label>
+      <input type="number" id="f-nominal" placeholder="0" min="1" inputmode="numeric">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-tambah')">Batal</button>
+      <button class="btn btn-primary" id="btn-simpan" onclick="simpanTransaksi()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DETAIL / AKSI -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>Detail Transaksi</h3>
+    <div id="detail-content"></div>
+    <div class="modal-actions">
+      <button class="btn btn-yellow" onclick="editFromDetail()">✏️ Edit</button>
+      <button class="btn btn-red" onclick="hapusTransaksi()">🗑️ Hapus</button>
+    </div>
+    <button class="btn btn-ghost btn-full" style="margin-top:8px;" onclick="closeModal('modal-detail')">Tutup</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ──────────────────────────────────────────────
+let selectedId   = null;
+let editMode     = false;
+let currentJenis = 'PENDAPATAN';
+
+// ─── INIT ────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().split('T')[0];
+  const ago30 = new Date(Date.now() - 30*864e5).toISOString().split('T')[0];
+
+  ['dash-start','trx-start','lap-start'].forEach(id => document.getElementById(id).value = ago30);
+  ['dash-end',  'trx-end',  'lap-end'  ].forEach(id => document.getElementById(id).value = today);
+  document.getElementById('f-tanggal').value = today;
+  document.getElementById('headerDate').textContent =
+    new Date().toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+
+  loadDashboard();
+  loadKategori();
+});
+
+// ─── NAVIGASI ────────────────────────────────────────────
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.getElementById('nav-'+page).classList.add('active');
+  if (page === 'transaksi') loadTransaksi();
+  if (page === 'laporan')   loadLaporan();
+}
+
+// ─── MODAL ──────────────────────────────────────────────
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  if (id === 'modal-tambah' && !editMode) resetForm();
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  if (id === 'modal-tambah') { editMode = false; selectedId = null; resetForm(); }
+}
+// close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) closeModal(o.id); });
+});
+
+// ─── JENIS TOGGLE ───────────────────────────────────────
+function setJenis(jenis) {
+  currentJenis = jenis;
+  document.getElementById('btn-pendapatan').className  = 'jenis-btn' + (jenis==='PENDAPATAN'  ? ' active-pendapatan'  : '');
+  document.getElementById('btn-pengeluaran').className = 'jenis-btn' + (jenis==='PENGELUARAN' ? ' active-pengeluaran' : '');
+  loadKategori(jenis);
+}
+
+// ─── FORMAT ─────────────────────────────────────────────
+function fmt(n) { return 'Rp ' + parseInt(n).toLocaleString('id-ID'); }
+
+// ─── TOAST ──────────────────────────────────────────────
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast show ${type}`;
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ─── KATEGORI ───────────────────────────────────────────
+async function loadKategori(jenis) {
+  jenis = jenis || currentJenis;
+  const res  = await fetch('/api/kategori?jenis='+jenis);
+  const data = await res.json();
+  const sel  = document.getElementById('f-kategori');
+  sel.innerHTML = data.map(k => `<option>${k}</option>`).join('');
+}
+
+// ─── RESET FORM ──────────────────────────────────────────
+function resetForm() {
+  editMode = false; selectedId = null; currentJenis = 'PENDAPATAN';
+  setJenis('PENDAPATAN');
+  document.getElementById('f-tanggal').value  = new Date().toISOString().split('T')[0];
+  document.getElementById('f-deskripsi').value = '';
+  document.getElementById('f-nominal').value   = '';
+  document.getElementById('modal-title').textContent  = '➕ Tambah Transaksi';
+  document.getElementById('btn-simpan').textContent   = '💾 Simpan';
+}
+
+// ─── SIMPAN / UPDATE ─────────────────────────────────────
+async function simpanTransaksi() {
+  const body = {
+    tanggal:  document.getElementById('f-tanggal').value,
+    jenis:    currentJenis,
+    kategori: document.getElementById('f-kategori').value,
+    deskripsi:document.getElementById('f-deskripsi').value.trim(),
+    nominal:  document.getElementById('f-nominal').value,
+  };
+  if (!body.tanggal || !body.kategori || !body.deskripsi || !body.nominal) {
+    toast('Semua field harus diisi!', 'error'); return;
+  }
+  const url    = editMode ? `/api/transaksi/${selectedId}` : '/api/transaksi';
+  const method = editMode ? 'PUT' : 'POST';
+  const res    = await fetch(url, { method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+  const data   = await res.json();
+  if (data.success) {
+    toast(data.message);
+    closeModal('modal-tambah');
+    loadDashboard();
+    if (document.getElementById('page-transaksi').classList.contains('active')) loadTransaksi();
+  } else {
+    toast(data.message, 'error');
+  }
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────
+async function loadDashboard() {
+  const s = document.getElementById('dash-start').value;
+  const e = document.getElementById('dash-end').value;
+
+  const [lap, trx] = await Promise.all([
+    fetch(`/api/laporan?start=${s}&end=${e}`).then(r=>r.json()),
+    fetch(`/api/transaksi?start=${s}&end=${e}`).then(r=>r.json()),
+  ]);
+
+  document.getElementById('dash-pendapatan').textContent  = fmt(lap.pendapatan);
+  document.getElementById('dash-pengeluaran').textContent = fmt(lap.pengeluaran);
+  document.getElementById('dash-keuntungan').textContent  = fmt(lap.keuntungan);
+  const k = document.getElementById('dash-keuntungan');
+  k.style.color = lap.keuntungan >= 0 ? 'var(--green)' : 'var(--red)';
+
+  const pct = lap.pendapatan > 0 ? Math.max(0, Math.min(100, (lap.keuntungan/lap.pendapatan)*100)) : 0;
+  const bar = document.getElementById('dash-bar');
+  bar.style.width = pct+'%';
+  bar.style.background = lap.keuntungan >= 0 ? 'var(--green)' : 'var(--red)';
+
+  const recent = document.getElementById('dash-recent');
+  const slice  = trx.slice(0,5);
+  recent.innerHTML = slice.length ? slice.map(t => trxItem(t)).join('') :
+    `<div class="empty-state" style="padding:20px"><p>Belum ada transaksi</p></div>`;
+}
+
+// ─── TRANSAKSI LIST ──────────────────────────────────────
+async function loadTransaksi() {
+  const s = document.getElementById('trx-start').value;
+  const e = document.getElementById('trx-end').value;
+  const data = await fetch(`/api/transaksi?start=${s}&end=${e}`).then(r=>r.json());
+  const list = document.getElementById('trx-list');
+  list.innerHTML = data.length ? data.map(t => trxItem(t)).join('') :
+    `<div class="empty-state"><div class="icon">📭</div><p>Tidak ada transaksi</p></div>`;
+}
+
+function trxItem(t) {
+  const k = t.jenis==='PENDAPATAN' ? 'P' : 'E';
+  const sign = k==='P' ? '+' : '-';
+  return `<div class="trx-item" onclick="showDetail(${t.id})">
+    <div class="trx-dot ${k}"></div>
+    <div class="trx-info">
+      <div class="desc">${t.deskripsi}</div>
+      <div class="meta">${t.tanggal} · ${t.kategori}</div>
+    </div>
+    <div class="trx-amount ${k}">${sign}${fmt(t.nominal)}</div>
+  </div>`;
+}
+
+// ─── DETAIL ──────────────────────────────────────────────
+async function showDetail(id) {
+  selectedId = id;
+  const res  = await fetch('/api/transaksi');
+  const all  = await res.json();
+  const t    = all.find(x => x.id===id);
+  if (!t) return;
+
+  const warna = t.jenis==='PENDAPATAN' ? 'var(--green)' : 'var(--red)';
+  document.getElementById('detail-content').innerHTML = `
+    <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:4px">
+      <div style="font-size:22px;font-weight:800;color:${warna};margin-bottom:10px">${fmt(t.nominal)}</div>
+      <table style="width:100%;font-size:13px;border-collapse:collapse">
+        <tr><td style="color:var(--muted);padding:4px 0;width:90px">ID</td><td style="font-weight:600">#${t.id}</td></tr>
+        <tr><td style="color:var(--muted);padding:4px 0">Tanggal</td><td style="font-weight:600">${t.tanggal}</td></tr>
+        <tr><td style="color:var(--muted);padding:4px 0">Jenis</td><td style="font-weight:600;color:${warna}">${t.jenis}</td></tr>
+        <tr><td style="color:var(--muted);padding:4px 0">Kategori</td><td style="font-weight:600">${t.kategori}</td></tr>
+        <tr><td style="color:var(--muted);padding:4px 0">Deskripsi</td><td style="font-weight:600">${t.deskripsi}</td></tr>
+      </table>
+    </div>`;
+  openModal('modal-detail');
+}
+
+function editFromDetail() {
+  closeModal('modal-detail');
+  // get data to fill form
+  fetch('/api/transaksi').then(r=>r.json()).then(all => {
+    const t = all.find(x=>x.id===selectedId);
+    if (!t) return;
+    editMode = true;
+    setJenis(t.jenis);
+    loadKategori(t.jenis).then(() => {
+      document.getElementById('f-tanggal').value   = t.tanggal;
+      document.getElementById('f-kategori').value  = t.kategori;
+      document.getElementById('f-deskripsi').value = t.deskripsi;
+      document.getElementById('f-nominal').value   = t.nominal;
+      document.getElementById('modal-title').textContent = '✏️ Edit Transaksi #'+t.id;
+      document.getElementById('btn-simpan').textContent  = '💾 Update';
+    });
+    openModal('modal-tambah');
+  });
+}
+
+async function hapusTransaksi() {
+  if (!selectedId) return;
+  if (!confirm(`Hapus transaksi #${selectedId}? Tidak bisa diundo.`)) return;
+  const res  = await fetch(`/api/transaksi/${selectedId}`, {method:'DELETE'});
+  const data = await res.json();
+  if (data.success) {
+    toast(data.message);
+    closeModal('modal-detail');
+    loadDashboard();
+    if (document.getElementById('page-transaksi').classList.contains('active')) loadTransaksi();
+  } else { toast(data.message, 'error'); }
+}
+
+// ─── LAPORAN ─────────────────────────────────────────────
+async function loadLaporan() {
+  const s   = document.getElementById('lap-start').value;
+  const e   = document.getElementById('lap-end').value;
+  const lap = await fetch(`/api/laporan?start=${s}&end=${e}`).then(r=>r.json());
+  const trx = await fetch(`/api/transaksi?start=${s}&end=${e}`).then(r=>r.json());
+
+  const byKat = {};
+  trx.forEach(t => {
+    if (!byKat[t.kategori]) byKat[t.kategori] = {P:0, E:0};
+    if (t.jenis==='PENDAPATAN') byKat[t.kategori].P += t.nominal;
+    else byKat[t.kategori].E += t.nominal;
+  });
+
+  const katRows = Object.entries(byKat).map(([k,v]) => `
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+      <span>${k}</span>
+      <span>
+        ${v.P ? '<span style="color:var(--green)">+'+fmt(v.P)+'</span>' : ''}
+        ${v.E ? '<span style="color:var(--red);margin-left:8px">-'+fmt(v.E)+'</span>' : ''}
+      </span>
+    </div>`).join('');
+
+  document.getElementById('laporan-content').innerHTML = `
+    <div class="summary-grid">
+      <div class="summary-card green-card"><div class="icon">💵</div><div class="label">Pendapatan</div><div class="amount">${fmt(lap.pendapatan)}</div></div>
+      <div class="summary-card red-card"><div class="icon">💸</div><div class="label">Pengeluaran</div><div class="amount">${fmt(lap.pengeluaran)}</div></div>
+      <div class="summary-card full" style="border-color:${lap.keuntungan>=0?'rgba(16,185,129,.3)':'rgba(239,68,68,.3)'};background:${lap.keuntungan>=0?'rgba(16,185,129,.08)':'rgba(239,68,68,.08)'}">
+        <div class="icon">📈</div><div class="label">Keuntungan</div>
+        <div class="amount" style="color:${lap.keuntungan>=0?'var(--green)':'var(--red)'}">${fmt(lap.keuntungan)}</div>
+      </div>
+    </div>
+    <div style="background:var(--card);border-radius:var(--radius);padding:14px;border:1px solid var(--border)">
+      <h3 style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px">📂 PER KATEGORI</h3>
+      ${katRows || '<p style="color:var(--muted);font-size:13px">Tidak ada data</p>'}
+      <div style="margin-top:10px;font-size:12px;color:var(--muted)">Total: ${trx.length} transaksi · Periode: ${s} s/d ${e}</div>
+    </div>`;
+}
+
+function setRange(range) {
+  const today = new Date();
+  let start;
+  if (range === 'bulan') { start = new Date(today.getFullYear(), today.getMonth(), 1); }
+  else { start = new Date(today); start.setDate(today.getDate() - today.getDay()); }
+  document.getElementById('lap-start').value = start.toISOString().split('T')[0];
+  document.getElementById('lap-end').value   = today.toISOString().split('T')[0];
+  loadLaporan();
+}
+
+// ─── EXPORT ──────────────────────────────────────────────
+function exportExcel() {
+  const s = document.getElementById('dash-start').value || document.getElementById('lap-start').value;
+  const e = document.getElementById('dash-end').value   || document.getElementById('lap-end').value;
+  window.location.href = `/api/export?start=${s}&end=${e}`;
+}
+</script>
+</body>
+</html>
